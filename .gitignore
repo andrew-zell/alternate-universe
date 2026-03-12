@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Claude / AI tooling
+.claude/
+.agents/
+skills-lock.json
+BRIEF.md
+
+# Fonts (licensed — not for public distribution)
+fonts/
+
+# Editor
+.vscode/
+.idea/

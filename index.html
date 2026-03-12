@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zell — alternate.universe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <script type="importmap">
+  {
+    "imports": {
+
+    }
+  }
+  </script>
+  <style>
+    /* ── Custom Font ─────────────────────────────────────────── */
+    @font-face {
+      font-family: 'HvNeuHvExt';
+      src: url('fonts/HelveticaNeueLTStd-HvEx.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: block;
+    }
+    /* ── Tokens ───────────────────────────────────────────────── */
+    :root {
+      --bg:           oklch(9% 0.007 50);
+      --surface:      oklch(13% 0.009 50);
+      --border:       oklch(18% 0.008 50);
+      --text:         oklch(88% 0.007 58);
+      --muted:        oklch(44% 0.008 52);
+      --very-muted:   oklch(26% 0.007 50);
+      --letter-dim:   oklch(19% 0.006 50);
+
+      --accent-h:     oklch(61% 0.13 47);   /* Horizon: amber-terracotta */
+      --accent-r:     oklch(93% 0.22 130);  /* Relay: chartreuse */
+      --accent-s:     oklch(58% 0.11 148);  /* Sentimento: forest green */
+
+      --font-display: 'HvNeuHvExt', 'Helvetica Neue', Arial, sans-serif;
+      --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
+      --font-body:    'Spectral', Georgia, serif;
+
+      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+      --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-quart:  cubic-bezier(0.5, 0, 0.75, 0);
+    }
+
+    /* ── Reset ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* All display font instances → uppercase */
+    .letter-slot, .app-name, .footer-statement, .home-name {
+      text-transform: uppercase;
+    }
+
+    /* ── Home card (zone landing state) ──────────────────────── */
+    .content-empty {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: clamp(32px, 5vw, 72px);
+      overflow: hidden;
+    }
+    .content-empty.is-active { opacity: 1; }
+    .home-index {
+      font-family: var(--font-mono);
+      font-size: clamp(0.6rem, 0.9vw, 0.72rem);
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      display: block;
+      margin-bottom: clamp(12px, 2.5vh, 28px);
+    }
+    .home-name {
+      font-family: var(--font-display);
+      font-size: clamp(3.5rem, 8vw, 10rem);
+      font-weight: 400;
+      line-height: 0.88;
+      letter-spacing: 0;
+      color: var(--text);
+      transform: scaleX(1.2);
+      transform-origin: left bottom;
+      display: block;
+      margin-bottom: clamp(20px, 3.5vh, 44px);
+    }
+    .home-foot {
+      border-top: 1px solid var(--border);
+      padding-top: clamp(14px, 2vh, 24px);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+    }
+    .home-intro {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      line-height: 1;
+    }
+    .home-brand {
+      font-family: var(--font-mono);
+      font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+      letter-spacing: 0.04em;
+      color: var(--text);
+      line-height: 1;
+    }
+    .home-hint {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--very-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .home-hint::before {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* Section 2 — Alphabet Zone (fixed overlay)                 */
+    /* ══════════════════════════════════════════════════════════ */
+    .zone-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 200;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .zone-overlay.is-active { display: flex; }
+
+    /* Three-panel track layout */
+    .zone-track {
+      display: flex;
+      width: 150vw;
+      height: 100%;
+      flex-shrink: 0;
+      transition: transform 380ms var(--ease-out-quart);
+      will-change: transform;
+    }
+    .zone-track.journal-open {
+      transform: translateX(-50vw);
+    }
+    .zone-panel {
+      width: 50vw;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .zone-divider {
+      width: 1px;
+      height: 100%;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .zone-journal-panel {
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--surface);
+      padding: clamp(40px, 6vh, 88px) clamp(28px, 4vw, 64px) clamp(40px, 6vh, 88px) clamp(28px, 4vw, 56px);
+    }
+    .zone-journal-panel::-webkit-scrollbar { display: none; }
+    .zone-journal-panel { scrollbar-width: none; }
+
+
+    /* ── Home intro copy (left panel) ────────────────────────── */
+    .home-intro-panel {
+      position: absolute;
+      inset: clamp(32px, 5vw, 72px);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: clamp(0.95rem, 1.5vw, 1.45rem);
+      font-weight: 700;
+      line-height: 1.45;
+      color: var(--text);
+      z-index: 2;
+      opacity: 1;
+      transition: opacity 380ms ease;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .home-intro-panel.hidden {
+      opacity: 0;
+    }
+    .home-intro-panel p {
+      margin: 0 0 1.1em;
+    }
+    .home-intro-panel p:last-child {
+      margin-bottom: 0;
+    }
+    .home-intro-panel strong {
+      color: #ffffff;
+    }
+
+    /* ── Letter Drum ──────────────────────────────────────────── */
+    .letter-drum {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 380ms ease;
+    }
+    .letter-drum.visible {
+      opacity: 1;
+    }
+    .letter-slot {
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(13vw, 19vw, 24vw);
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+      user-select: none;
+      pointer-events: none;
+      will-change: transform, opacity;
+      padding-left: clamp(28px, 6vw, 96px);
+      transform-origin: left top;
+      /* Color transitions only — transform is RAF-driven */
+      transition: color 160ms ease;
+    }
+
+    /* ── Content Panel ────────────────────────────────────────── */
+    .content-card {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(32px, 5vh, 80px) clamp(32px, 5vw, 80px) clamp(32px, 5vh, 80px) clamp(24px, 3vw, 48px);
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 380ms var(--ease-out-quart),
+                  transform 380ms var(--ease-out-quart);
+      pointer-events: none;
+    }
+    .content-card.is-active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .content-card.is-leaving {
+      opacity: 0;
+      transform: translateY(-9px);
+      transition: opacity 220ms var(--ease-in-quart),
+                  transform 220ms var(--ease-in-quart);
+    }
+
+    /* Empty / home state styles defined above with .home-* classes */
+
+    /* App card layout */
+    .app-card-inner {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto auto;
+      gap: clamp(12px, 2vh, 22px);
+      height: min(580px, 80vh);
+    }
+
+    .app-name {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 4.5vw, 5.2rem);
+      font-weight: 400;
+      line-height: 0.92;
+      letter-spacing: 0;
+      color: var(--text);
+      transform: scaleX(1.2);
+      transform-origin: left top;
+      display: block;
+    }
+    .app-body {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .app-status {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.28em 0.65em;
+      border: 1px solid currentColor;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 0.25em;
+    }
+    .app-status.status-active   { /* color set inline per-app accent */ }
+    .app-status.status-design   { color: var(--very-muted); }
+
+    .app-tagline {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: clamp(0.9rem, 1.35vw, 1.1rem);
+      color: oklch(60% 0.008 54);
+      line-height: 1.3;
+    }
+
+    .app-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+    .app-preview-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--very-muted);
+    }
+
+    .app-description {
+      font-family: var(--font-body);
+      font-size: clamp(0.92rem, 1.25vw, 1.05rem);
+      line-height: 1.72;
+      color: oklch(78% 0.007 54);
+      flex: 1;
+    }
+
+    .app-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .stack-tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: oklch(62% 0.007 54);
+      padding: 0.28em 0.62em;
+      border: 1px solid oklch(28% 0.006 50);
+      line-height: 1;
+    }
+
+    /* ── Journal Entries ─────────────────────────────────────────── */
+    .journal-header {
+      margin-bottom: clamp(28px, 4vh, 52px);
+    }
+    .journal-app-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: oklch(56% 0.008 52);
+      display: block;
+      margin-bottom: 0.6em;
+    }
+    .journal-app-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.6rem);
+      color: var(--text);
+      transform: scaleX(1.2);
+      transform-origin: left;
+      display: block;
+      line-height: 0.92;
+    }
+    .journal-subtitle {
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: oklch(54% 0.008 52);
+      line-height: 1.6;
+      margin-top: 0.75em;
+      display: block;
+    }
+    .journal-entry {
+      padding-top: clamp(24px, 3.5vh, 44px);
+      margin-top: clamp(24px, 3.5vh, 44px);
+      border-top: 1px solid var(--border);
+    }
+    .journal-entry:first-of-type {
+      border-top: none;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    .journal-date {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      color: oklch(54% 0.008 52);
+      display: block;
+      margin-bottom: 0.5em;
+    }
+    .journal-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+      color: var(--text);
+      transform: scaleX(1.2);
+      transform-origin: left;
+      display: block;
+      line-height: 1;
+      margin-bottom: clamp(12px, 1.8vh, 22px);
+    }
+    .journal-body {
+      font-family: var(--font-body);
+      font-size: clamp(0.94rem, 1.15vw, 1.04rem);
+      line-height: 1.8;
+      color: oklch(72% 0.007 54);
+    }
+    .journal-body p { margin: 0 0 1em; }
+    .journal-body p:last-child { margin-bottom: 0; }
+    .journal-claude-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: oklch(58% 0.010 52);
+      display: block;
+      margin-bottom: 0.4em;
+    }
+    .journal-claude-note {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: oklch(62% 0.010 52);
+      border-left: 2px solid;
+      padding-left: 1em;
+      margin-top: 1.4em;
+      line-height: 1.7;
+    }
+    .journal-decisions {
+      margin-top: 0.9em;
+      list-style: none;
+      padding: 0;
+    }
+    .journal-decisions li {
+      font-family: var(--font-mono);
+      font-size: 0.77rem;
+      color: oklch(66% 0.009 52);
+      padding: 0.22em 0;
+      letter-spacing: 0.04em;
+    }
+    .journal-decisions li::before { content: '— '; }
+
+    /* ── Journal Open Button ──────────────────────────────────────── */
+    .journal-open-btn {
+      position: absolute;
+      bottom: clamp(24px, 4vh, 52px);
+      right: clamp(28px, 4vw, 56px);
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: oklch(58% 0.008 52);
+      background: none;
+      border: 1px solid oklch(44% 0.007 50);
+      padding: 0.5em 1em;
+      cursor: pointer;
+      transform: scaleX(1.2);
+      transform-origin: right bottom;
+      display: inline-block;
+      transition: color 180ms ease, border-color 180ms ease;
+    }
+    .journal-open-btn:hover {
+      color: var(--text);
+      border-color: oklch(46% 0.006 50);
+    }
+
+    /* ── Progress Indicator ───────────────────────────────────── */
+    .zone-progress {
+      position: absolute;
+      bottom: clamp(20px, 3.5vh, 44px);
+      left: clamp(28px, 6vw, 96px);
+      display: flex;
+      align-items: center;
+      gap: 0.45em;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: var(--very-muted);
+      z-index: 10;
+      font-variant-numeric: tabular-nums;
+    }
+    .progress-app-letter {
+      color: var(--text);
+      min-width: 1.1ch;
+      display: inline-block;
+    }
+
+    /* ══════════════════════════════════════════════════════════ */
+    /* Section 3 — Footer                                        */
+    /* ══════════════════════════════════════════════════════════ */
+    .footer {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      padding: clamp(64px, 10vw, 160px);
+      gap: clamp(40px, 6vh, 72px);
+    }
+    .footer-line {
+      width: 1px;
+      height: clamp(40px, 6vh, 72px);
+      background: var(--border);
+    }
+    .footer-statement {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(1.6rem, 3.2vw, 3rem);
+      line-height: 1.1;
+      color: var(--text);
+      text-align: center;
+      max-width: 18ch;
+      transform: scaleX(1.2);
+      transform-origin: center top;
+      display: block;
+    }
+    .footer-sub {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--very-muted);
+    }
+
+    /* ── Reduced motion ───────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- Section 2 — Alphabet Zone (fixed overlay)               -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <div class="zone-overlay" id="zone-overlay" aria-hidden="true" role="presentation">
+
+    <!-- Sliding track: [drum | card | journal] -->
+    <div class="zone-track" id="zone-track">
+
+      <!-- Panel 1: Letter Drum -->
+      <div class="zone-panel">
+        <div class="home-intro-panel" id="home-intro-panel">
+          <p>I&#8217;m building an app for every letter of the alphabet with the help of <strong>Claude, Cursor,</strong> and <strong>Codex.</strong></p>
+          <p>Designed in Figma and Photoshop, with occasional support from <strong>Blender, Illustrator,</strong> and <strong>Paper.</strong></p>
+          <p>Each app has a journal with build notes, and if it&#8217;s public, a link to the repo and demo.</p>
+          <p>Welcome to the <strong>alternate.universe.</strong></p>
+        </div>
+        <div class="letter-drum" id="letter-drum"></div>
+      </div>
+
+      <div class="zone-divider"></div>
+
+      <!-- Panel 2: App Card -->
+      <div class="zone-panel" id="zone-right">
+
+        <!-- Empty state -->
+        <div class="content-card content-empty is-active" id="content-empty">
+          <span class="home-index">001 — A–Z</span>
+          <span class="home-name">Zell</span>
+          <div class="home-foot">
+            <div>
+              <p class="home-intro">welcome to the</p>
+              <p class="home-brand">alternate.universe</p>
+            </div>
+            <div class="home-hint" aria-hidden="true">scroll</div>
+          </div>
+        </div>
+
+        <!-- App cards injected by JS -->
+      </div>
+
+      <div class="zone-divider"></div>
+
+      <!-- Panel 3: Journal -->
+      <div class="zone-panel zone-journal-panel" id="zone-journal"></div>
+
+    </div>
+
+    <!-- Progress indicator -->
+    <div class="zone-progress" id="zone-progress">
+      <span class="progress-app-letter" id="progress-letter"></span>
+      <span>·</span>
+      <span id="progress-pos">1/26</span>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════ -->
+  <!-- Section 3 — Footer                                      -->
+  <!-- ════════════════════════════════════════════════════════ -->
+  <footer class="footer" aria-label="Closing">
+    <div class="footer-line" aria-hidden="true"></div>
+    <p class="footer-statement">
+      26 letters.<br>
+      3 apps so far.<br>
+      The rest is still loading.
+    </p>
+    <span class="footer-sub">alternate.universe — Zell</span>
+  </footer>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════
+       App Data
+    ═══════════════════════════════════════════════════════════ */
+    const APPS = [
+      {
+        letter: 'A',
+        index:  0,
+        name:   'Artifex',
+        tagline: 'Prospecting video generator',
+        description: 'Artifex generates personalized sales prospecting videos for Zoom — built on Remotion, so every frame is code. Drop in a prospect, get a rendered video. No screen recording, no editing, no exporting from a timeline. The output looks produced because it is — just not by a human.',
+        stack:  ['React', 'Remotion', 'Fly.io', 'TypeScript'],
+        status: 'active',
+        accent: 'oklch(62% 0.18 250)',
+        accentRaw: 'oklch(62% 0.18 250)',
+        journal: [],
+      },
+      {
+        letter: 'B',
+        index:  1,
+        name:   'Brand.gen',
+        tagline: 'Brand canvas generator',
+        description: 'Brand.gen builds on Horizon’s rendering engine to generate on-brand canvases for executive briefing center screens — constrained to specific physical dimensions, populated with SVG logos pulled from Wikimedia, custom text, and image placement. Built to make a room feel like the customer already owns the space.',
+        stack:  ['React', 'WebGL', 'Wikimedia API', 'TypeScript'],
+        status: 'active',
+        accent: 'oklch(72% 0.15 220)',
+        accentRaw: 'oklch(72% 0.15 220)',
+        journal: [],
+      },
+      {
+        letter: 'H',
+        index:  7,
+        name:   'Horizon',
+        tagline: 'Sky gradient generator',
+        description: 'Horizon generates photorealistic sky gradients using a WebGL fragment shader — not a CSS trick, not a gradient picker. Real atmospheric math: zenith-to-horizon color curves, grain noise, refractive bar effects, seed-based randomization. Export as PNG or SVG. Built because the sky is underrated.',
+        stack:  ['React', 'WebGL', 'GLSL', 'TypeScript'],
+        status: 'active',
+        accent: 'var(--accent-h)',
+        accentRaw: 'oklch(61% 0.13 47)',
+        journal: [],
+      },
+      {
+        letter: 'R',
+        index:  17,
+        name:   'Relay',
+        tagline: 'Briefing center content management',
+        description: 'Relay is the operating system for executive briefing centers. It manages what plays on which screen, in which room, for which meeting — with per-location configuration, idle states, and a live attendee model. Built to make a physical room feel as intentional as a keynote slide.',
+        stack:  ['React', 'Fly.io', 'Supabase', 'TypeScript'],
+        status: 'active',
+        accent: 'var(--accent-r)',
+        accentRaw: 'oklch(93% 0.22 130)',
+        journal: [
+          {
+            date: '2026-03-10',
+            title: 'Briefing Management panel',
+            body: ['The Sentimento integration working meant I immediately saw the next gap: Relay had no way to manage actual attendees. The \u2192S button was sending a single company-level respondent \u2014 useful for testing, not useful for real briefings where five specific people need to receive surveys.', 'I wanted a full-screen admin panel, separate from the main scheduling view. A BRIEFING button in the topbar that swaps the entire body out for something that looks more like a spreadsheet than a CMS.', 'The panel lists every record across all locations, filterable by center using tab buttons in the header. Each row shows date, client, type, time, and a participant count badge. Clicking a row expands an inline participant table with columns for name, email, position, and company. Rows are editable in place. There\'s an add row at the bottom \u2014 company pre-fills from the record\'s client name, Enter submits.', 'The data model is a Participant interface living in the Zustand store alongside records and elements. Three actions: add, update, remove. Nothing persists on refresh yet, which is fine for now.', 'The send function got updated to match. If a record has participants, sendRecordToSentimento fires one POST per person in parallel. If the list is empty, it falls back to the old behavior. No breaking change to the schedule button.', 'Email is stored in Relay but Sentimento\u2019s respondent schema doesn\u2019t have the field yet \u2014 that\u2019s being handled in the other session. The POST payload already includes it when the field is ready.'],
+            claudeNote: 'The inline-editable table with no save button is a UX choice I respect. Everything updates on change. The draft add row pre-filling company from the client name was my idea and I think it was a good one.',
+            decisions: ['Full-screen panel swap instead of a modal or sidebar \u2014 admin work deserves its own space', 'Inline editing with no explicit save \u2014 Zustand updates immediately on input change', 'Parallel sends for multi-participant records \u2014 briefings are small enough that rate limiting isn\u2019t a concern yet'],
+          },
+          {
+            date: '2026-03-10',
+            title: 'Sentimento integration ships',
+            body: ['I set out to wire Relay into Sentimento so that a completed briefing could kick off a survey. The concept was simple: a \u2192S button on each row in the Past Events section of the schedule. Click it, and the record gets sent to Sentimento as a respondent.', 'The Relay side came together quickly. A sendRecordToSentimento utility that POSTs to /api/responses/respondent with the client name, tour date, and briefing center ID. A config file mapping Relay location IDs to Sentimento integer IDs. Button states for idle, loading, sent, and error \u2014 with retry on error. A shared secret header on every outbound request to keep things reasonably locked down.', 'The first real snag was the briefing center IDs. I\u2019d hardcoded placeholders (1\u20134) and needed to confirm them against the live DB. Hitting the /api/briefing-centers endpoint returned an empty array \u2014 no centers had been created yet. Sentimento\u2019s centers route only has a GET, so I had to coordinate with the other session to seed the data first. Once SJ=1, LD=2, TK=3, SG=4 came back, the placeholders turned out to be exactly right.', 'Then Vite\u2019s build-time variable behavior bit me. I\u2019d tried to configure the Sentimento URL as a runtime secret on the hosting platform, which does nothing for a static bundle \u2014 Vite bakes env vars in at build time, not runtime. Simple fix: set the production URL directly in source as the default, and let a local env file override it for dev. Redeployed, and it worked on the first try.'],
+            claudeNote: 'I did attempt the runtime secret approach before catching that Vite doesn\u2019t work that way. I fixed it before the deploy. I\u2019m logging this in the spirit of technical honesty, not self-flagellation.',
+            decisions: ['Production URL defaults to source; local env overrides for dev', 'Fallback behavior: if no participants exist, send a single record-level respondent using client name'],
+          },
+        ],
+      },
+      {
+        letter: 'S',
+        index:  18,
+        name:   'Sentimento',
+        tagline: 'Post-briefing survey tool',
+        description: 'Sentimento reads the briefing record Relay writes and generates a survey that sounds like it was drafted by someone who was actually in the room. LLM-generated questions based on the actual briefing context — not templates. Fixed structure, variable content. The goal is feedback that feels human enough to give it.',
+        stack:  ['React', 'Supabase', 'Claude API', 'TypeScript'],
+        status: 'in design',
+        accent: 'var(--accent-s)',
+        accentRaw: 'oklch(58% 0.11 148)',
+        journal: [
+          {
+            date: '2026-03-11',
+            title: 'Animation flicker root cause',
+            body: ['Pages with multiple cards had a visible jitter on load \u2014 a position shift followed by what looked like a separate opacity fade. It felt like two animations running in sequence rather than one.', 'It was two animations running in sequence. animate-fade-in was defined twice: once in tailwind.config.js as a pure opacity fade, and once in index.css as a combined opacity + translateY. The CSS file version won the cascade, so that wasn\u2019t the core problem. The core problem was AdminLayout\u2019s content wrapper also had animate-fade-in on it \u2014 so the whole page container was animating, and then each page\u2019s own root div animated on top of that. First pass: position shift from the layout wrapper. Second pass: opacity fade from the page component. That\u2019s exactly what it looked like.', 'The secondary issue was animation-fill-mode. Several pages applied animate-fade-in and animate-slide-up with inline animationDelay but no backwards fill mode. Without it, elements start at their default state (fully visible) during the delay, then snap to opacity: 0 when the animation fires. It looks like a flash.', 'Fixed by removing animate-fade-in from the AdminLayout wrapper entirely \u2014 pages own their own entrance. Added animation-fill-mode: backwards to both animation class definitions so delayed elements stay hidden until their animation actually starts.'],
+            claudeNote: 'animation-fill-mode: backwards is one of those properties that sounds obvious, means something specific, and is almost never included by default. We have now learned this together. It is in the CSS. It will stay in the CSS.',
+            decisions: [],
+          },
+          {
+            date: '2026-03-11',
+            title: 'Locations page',
+            body: ['Briefing centers and tour types were seed-script-only. If you wanted to add a new center, you edited seed.ts and ran it against the database. That was fine for setup but not sustainable once the app is in regular use.', 'Built an admin-only Locations page with two sections \u2014 one for briefing centers, one for tour types. Inline editing: rows are read-only by default, hover reveals edit and delete, a small + link at the bottom opens a new editable row. No modal, no separate form page. The backend got full CRUD routes on both /api/briefing-centers and /api/tour-types, gated to admin role.'],
+            claudeNote: '\u201cInline editing\u201d sounds elegant in retrospect. There were approximately four intermediate states \u2014 showAdd, editingId, pending, error \u2014 that all needed to coexist gracefully. It worked out.',
+            decisions: [],
+          },
+          {
+            date: '2026-03-11',
+            title: 'Nav structure',
+            body: ['The nav was wrong. Surveys was filed under Analytics, which made no sense. I wanted to fix that and ended up doing a proper reorganization while I was in there.', 'Three groups now: Insights (Dashboard, Responses, Analytics), Briefings (Intake, History), Content (Surveys, Questionnaires). Admin is still Admin. The old two-group layout \u2014 Analytics up top, everything else in Management \u2014 was a placeholder that never got revisited. Now that the app has a real shape, the groups needed to reflect it.', 'Renamed \u201cBriefings\u201d to \u201cIntake\u201d and \u201cRoster\u201d to \u201cHistory\u201d at the same time. Those two label changes made the intent of each page clearer. Intake is where respondents arrive. History is where you go to look back.'],
+            claudeNote: null,
+            decisions: [],
+          },
+        ],
+      },
+    ];
+
+    const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+    /* Map: letter index 0-25 → app (if active) */
+    const appByIndex = {};
+    APPS.forEach(a => { appByIndex[a.index] = a; });
+
+    /** Returns the most-recently-passed active app at or before idx */
+    function getActiveAppAt(idx) {
+      let found = null;
+      for (const a of APPS) { if (idx >= a.index) found = a; }
+      return found;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DOM Refs
+    ═══════════════════════════════════════════════════════════ */
+    const zoneOverlay = document.getElementById('zone-overlay');
+    const letterDrum       = document.getElementById('letter-drum');
+    const homeIntroPanel   = document.getElementById('home-intro-panel');
+
+    function setHomeState(atHome) {
+      homeIntroPanel.classList.toggle('hidden', !atHome);
+      letterDrum.classList.toggle('visible', !atHome);
+    }
+    const zoneRight   = document.getElementById('zone-right');
+    const contentEmpty = document.getElementById('content-empty');
+    const progressLetterEl = document.getElementById('progress-letter');
+    const progressPosEl    = document.getElementById('progress-pos');
+
+    /* ═══════════════════════════════════════════════════════════
+       Build Letter Slots
+    ═══════════════════════════════════════════════════════════ */
+    const letterSlots = LETTERS.map((ch, i) => {
+      const el = document.createElement('div');
+      el.className = 'letter-slot';
+      el.textContent = ch;
+      el.dataset.i = i;
+      letterDrum.appendChild(el);
+      return el;
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       Build App Content Cards
+    ═══════════════════════════════════════════════════════════ */
+    const appCards = {}; // letter → element
+
+    APPS.forEach(app => {
+      const card = document.createElement('div');
+      card.className = 'content-card';
+
+      const statusClass = app.status === 'active' ? 'status-active' : 'status-design';
+      const statusColor = app.status === 'active' ? `style="color:${app.accentRaw}"` : '';
+      const hasJournal  = app.journal && app.journal.length > 0;
+
+      card.innerHTML = `
+        <div class="app-card-inner">
+          <h2 class="app-name">${app.name}</h2>
+          <p class="app-tagline">${app.tagline}</p>
+          <div class="app-preview">
+            <span class="app-preview-label">${app.name} — preview</span>
+          </div>
+          <div class="app-body">
+            <p class="app-description">${app.description}</p>
+            <span class="app-status ${statusClass}" ${statusColor}>${app.status === 'active' ? 'active' : 'in design'}</span>
+          </div>
+          <div class="app-stack">
+            ${app.stack.map(s => `<span class="stack-tag">${s}</span>`).join('')}
+          </div>
+        </div>
+        ${hasJournal ? `<button class="journal-open-btn" data-letter="${app.letter}">Open Journal &#8249;</button>` : ''}
+      `;
+      zoneRight.appendChild(card);
+      appCards[app.letter] = card;
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       State
+    ═══════════════════════════════════════════════════════════ */
+    let letterTarget  = 0;    // integer 0–25
+    let letterDisplay = 0;    // float, lerped for animation
+    let inZone        = false;
+    let savedScrollY  = 0;    // scrollY when zone was entered
+    let zoneDocTop    = 0;    // spacer's offsetTop at entry time
+    let zoneDocHeight = 0;    // spacer's offsetHeight at entry time
+
+    let wheelBuffer   = 0;
+    let touchBufferY  = 0;
+    let touchLastY    = 0;
+    let lastAdvanceMs = 0;
+    const WHEEL_THRESH   = 55;  // px of wheel delta before advancing
+    const ADVANCE_COOLDOWN = 105; // ms between advances
+
+    let currentApp = undefined; // undefined = uninitialized, null = empty state, app = app object
+    let journalOpen = false;    // when true, scroll is suspended for native journal scroll
+
+    let slotHeight = 0; // measured once from a rendered slot
+
+    /* ═══════════════════════════════════════════════════════════
+       Zone Entry / Exit
+    ═══════════════════════════════════════════════════════════ */
+    function enterZone(startIndex) {
+      if (inZone) return;
+
+      /* Record doc position before any scroll lock */
+      savedScrollY  = window.scrollY;
+      zoneDocTop    = 0;
+      zoneDocHeight = 0;
+
+      inZone = true;
+      wheelBuffer  = 0;
+      touchBufferY = 0;
+      letterTarget  = startIndex;
+      letterDisplay = startIndex; // snap, no initial animation
+
+      /* Scroll lock */
+      document.body.style.position = 'fixed';
+      document.body.style.top      = `-${savedScrollY}px`;
+      document.body.style.width    = '100%';
+      document.body.style.overflow = 'hidden';
+
+      zoneOverlay.classList.add('is-active');
+
+      initContentPanel(startIndex);
+      updateProgress(startIndex);
+    }
+
+    function exitZone(direction) {
+      if (!inZone) return;
+      if (journalOpen) closeJournal();
+      inZone = false;
+      wheelBuffer  = 0;
+      touchBufferY = 0;
+
+      /* Release scroll lock */
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.width    = '';
+      document.body.style.overflow = '';
+
+      zoneOverlay.classList.remove('is-active');
+
+      const targetY = direction > 0
+        ? zoneDocTop + zoneDocHeight + 4
+        : Math.max(0, zoneDocTop - window.innerHeight * 0.5);
+
+      window.scrollTo(0, targetY);
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════
+       Wheel Handler
+    ═══════════════════════════════════════════════════════════ */
+    window.addEventListener('wheel', (e) => {
+      if (!inZone) return;
+      if (journalOpen) return; // let journal panel scroll natively
+      e.preventDefault();
+
+      const now = Date.now();
+      wheelBuffer += e.deltaY;
+
+      if (Math.abs(wheelBuffer) >= WHEEL_THRESH && now - lastAdvanceMs >= ADVANCE_COOLDOWN) {
+        const dir = wheelBuffer > 0 ? 1 : -1;
+        wheelBuffer   = 0;
+        lastAdvanceMs = now;
+
+        const next = letterTarget + dir;
+        if (next < -1) { return; }
+        if (next > 25) { exitZone(1);  return; }
+
+        letterTarget = next;
+        syncContentPanel(letterTarget, false);
+        updateProgress(letterTarget);
+        setHomeState(letterTarget === -1);
+      }
+    }, { passive: false });
+
+    /* ═══════════════════════════════════════════════════════════
+       Touch Handler
+    ═══════════════════════════════════════════════════════════ */
+    window.addEventListener('touchstart', (e) => {
+      if (!inZone) return;
+      touchLastY    = e.touches[0].clientY;
+      touchBufferY  = 0;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!inZone) return;
+      if (journalOpen) return; // let journal panel scroll natively
+      e.preventDefault();
+
+      const dy = touchLastY - e.touches[0].clientY;
+      touchLastY    = e.touches[0].clientY;
+      touchBufferY += dy;
+
+      const now = Date.now();
+      if (Math.abs(touchBufferY) >= 55 && now - lastAdvanceMs >= ADVANCE_COOLDOWN) {
+        const dir = touchBufferY > 0 ? 1 : -1;
+        touchBufferY  = 0;
+        lastAdvanceMs = now;
+
+        const next = letterTarget + dir;
+        if (next < -1) { return; }
+        if (next > 25) { exitZone(1);  return; }
+
+        letterTarget = next;
+        syncContentPanel(letterTarget, false);
+        updateProgress(letterTarget);
+        setHomeState(letterTarget === -1);
+      }
+    }, { passive: false });
+
+    /* ═══════════════════════════════════════════════════════════
+       Keyboard Navigation
+    ═══════════════════════════════════════════════════════════ */
+    window.addEventListener('keydown', (e) => {
+      if (!inZone) return;
+      const now = Date.now();
+      if (now - lastAdvanceMs < 140) return;
+
+      let dir = 0;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') dir = 1;
+      if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  dir = -1;
+      if (!dir) return;
+
+      e.preventDefault();
+      lastAdvanceMs = now;
+
+      const next = letterTarget + dir;
+      if (next < -1) { return; }
+      if (next > 25) { exitZone(1);  return; }
+
+      letterTarget = next;
+      syncContentPanel(letterTarget, false);
+      updateProgress(letterTarget);
+      setHomeState(letterTarget === -1);
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       Content Panel State Machine
+    ═══════════════════════════════════════════════════════════ */
+    /**
+     * Called on every letter advance.
+     * Only updates the panel when the cursor lands EXACTLY on an active app
+     * letter (H, R, S) or drops back before the first app.
+     * Everything else: panel holds its current state — this gives correct
+     * bidirectional behaviour (scrolling up through Q-I keeps Relay visible).
+     */
+    function syncContentPanel(idx, instant) {
+      const appAtExact = appByIndex[idx];
+
+      if (appAtExact) {
+        /* Landed exactly on an active app letter */
+        transitionTo(appAtExact, instant);
+      } else if (idx < APPS[0].index) {
+        /* Retreated before the first app */
+        transitionTo(null, instant);
+      }
+      /* Otherwise: hold whatever is already showing */
+    }
+
+    /**
+     * Used when entering the zone — sets the initial state via getActiveAppAt
+     * so that entering at Z shows Sentimento, entering at A shows empty, etc.
+     */
+    function initContentPanel(startIdx) {
+      const app = getActiveAppAt(startIdx);
+      currentApp = undefined; /* force update even if same */
+      transitionTo(app, true);
+    }
+
+    function transitionTo(nextApp, instant) {
+      if (nextApp === currentApp) return;
+      if (journalOpen) closeJournal();
+
+      const FADE_OUT_MS    = instant ? 0 : 220;
+      const FADE_IN_DELAY  = instant ? 0 : FADE_OUT_MS + 30;
+
+      /* Fade out current */
+      if (currentApp && currentApp !== undefined) {
+        const old = appCards[currentApp.letter];
+        old.classList.remove('is-active');
+        old.classList.add('is-leaving');
+        setTimeout(() => old.classList.remove('is-leaving'), FADE_OUT_MS + 50);
+      } else if (currentApp === null) {
+        contentEmpty.classList.remove('is-active');
+      }
+
+      currentApp = nextApp;
+
+      setTimeout(() => {
+        if (nextApp) {
+          appCards[nextApp.letter].classList.add('is-active');
+        } else {
+          contentEmpty.classList.add('is-active');
+        }
+      }, FADE_IN_DELAY);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Progress Indicator
+    ═══════════════════════════════════════════════════════════ */
+    function updateProgress(idx) {
+      /* Use currentApp (the panel's actual state) not getActiveAppAt —
+         so Q while Relay is shown reads "R · 17/26", not "H · 17/26" */
+      const displayed = (currentApp && currentApp.letter) ? currentApp : null;
+      progressLetterEl.textContent = displayed ? displayed.letter : '';
+      progressPosEl.textContent    = idx >= 0 ? `${idx + 1}/26` : '';
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Journal Panel
+    ═══════════════════════════════════════════════════════════ */
+    const zoneTrack   = document.getElementById('zone-track');
+    const zoneJournal = document.getElementById('zone-journal');
+
+    function buildJournalContent(app) {
+      const entries = [...app.journal]; // most recent first (already ordered in APPS)
+
+      const headerHTML = `
+        <div class="journal-header">
+          <span class="journal-app-label">journal — ${app.letter}</span>
+          <span class="journal-app-title">${app.name}</span>
+          <span class="journal-subtitle">A build journal written by Claude and me. We catalog decisions, dead ends, and what actually shipped.</span>
+        </div>`;
+
+      const entriesHTML = entries.map(entry => {
+        const bodyParas = entry.body.map(p => `<p>${p}</p>`).join('');
+        const noteHTML  = entry.claudeNote
+          ? `<div class="journal-claude-note" style="border-color:${app.accentRaw}"><span class="journal-claude-label">Claude's note</span>${entry.claudeNote}</div>`
+          : '';
+        const decisionsHTML = entry.decisions && entry.decisions.length > 0
+          ? `<ul class="journal-decisions">${entry.decisions.map(d => `<li>${d}</li>`).join('')}</ul>`
+          : '';
+        return `
+          <div class="journal-entry">
+            <span class="journal-date">${entry.date}</span>
+            <span class="journal-title">${entry.title}</span>
+            <div class="journal-body">${bodyParas}</div>
+            ${noteHTML}
+            ${decisionsHTML}
+          </div>`;
+      }).join('');
+
+      return headerHTML + entriesHTML;
+    }
+
+    function openJournal(app) {
+      if (journalOpen) return;
+      journalOpen = true;
+
+      zoneJournal.innerHTML = buildJournalContent(app);
+      zoneJournal.scrollTop = 0;
+
+      zoneTrack.classList.add('journal-open');
+
+      /* Flip all open buttons to close state */
+      document.querySelectorAll('.journal-open-btn').forEach(btn => {
+        if (btn.dataset.letter === app.letter) {
+          btn.textContent = 'Close Journal ›';
+        }
+      });
+    }
+
+    function closeJournal() {
+      if (!journalOpen) return;
+      journalOpen = false;
+
+      zoneTrack.classList.remove('journal-open');
+
+      /* Reset all buttons */
+      document.querySelectorAll('.journal-open-btn').forEach(btn => {
+        btn.textContent = 'Open Journal ‹';
+      });
+    }
+
+    /* Delegate click on journal buttons */
+    zoneRight.addEventListener('click', (e) => {
+      const btn = e.target.closest('.journal-open-btn');
+      if (!btn) return;
+      const letter = btn.dataset.letter;
+      const app    = APPS.find(a => a.letter === letter);
+      if (!app) return;
+
+      if (journalOpen) {
+        closeJournal();
+      } else {
+        openJournal(app);
+      }
+    });
+
+    /* Close journal when zone is exited or card transitions — see exitZone() and transitionTo() above */
+
+    /* ═══════════════════════════════════════════════════════════
+       RAF Animation Loop — Letter Drum
+    ═══════════════════════════════════════════════════════════ */
+    const LERP_SPEED = 0.15; /* Faster = more mechanical */
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    /* Measure slot height once after fonts load */
+    document.fonts.ready.then(() => {
+      const probe = letterSlots[0];
+      probe.style.visibility = 'hidden';
+      probe.style.transform   = 'none';
+      probe.style.opacity     = '0';
+      /* Force layout */
+      slotHeight = probe.offsetHeight || window.innerWidth * 0.22;
+      probe.style.visibility = '';
+      probe.style.opacity     = '';
+    });
+
+    function renderDrum(display) {
+      const vh       = window.innerHeight;
+      const vw       = window.innerWidth;
+      const H        = slotHeight || vw * 0.22;
+      const SPACING  = H * 1.05; /* tight, drum-like */
+      const centerY  = vh * 0.5 - H * 0.5;
+
+      letterSlots.forEach((el, i) => {
+        const dist    = i - display;
+        const absDist = Math.abs(dist);
+
+        /* Only render ±2 letters from center */
+        if (absDist > 2.2) {
+          el.style.opacity    = '0';
+          el.style.visibility = 'hidden';
+          return;
+        }
+
+        el.style.visibility = 'visible';
+
+        /* Opacity: adjacent letters ghost at ~35–40% so they're legible */
+        const opacity = Math.max(0, 1 - absDist * 0.60);
+        const scale   = Math.max(0.28, 1 - absDist * 0.52);
+        const y       = centerY + dist * SPACING;
+
+        /* Color: ONLY the exact active-app letters (H, R, S) get their
+           accent colour. Every other letter — including inactive center
+           letters — is a visible warm grey.                            */
+        let color;
+        if (i === letterTarget) {
+          const exactApp = appByIndex[letterTarget];
+          color = exactApp ? exactApp.accentRaw : 'oklch(52% 0.006 50)';
+        } else if (absDist < 1.5) {
+          color = 'oklch(46% 0.006 50)'; /* ghost adjacent — lighter */
+        } else {
+          color = 'oklch(28% 0.005 50)'; /* second ghost            */
+        }
+
+        el.style.opacity         = opacity;
+        el.style.color           = color;
+        el.style.transform       = `translateY(${y}px) scale(${scale}) scaleX(1.2)`;
+        el.style.transformOrigin = 'left top';
+      });
+    }
+
+    function rafLoop() {
+      if (inZone) {
+        letterDisplay = lerp(letterDisplay, letterTarget, LERP_SPEED);
+        renderDrum(letterDisplay);
+      }
+      requestAnimationFrame(rafLoop);
+    }
+    requestAnimationFrame(rafLoop);
+
+    /* Initial progress state */
+    updateProgress(-1);
+
+    /* Zone is the full experience — enter at home slot (-1) */
+    enterZone(-1);
+  </script>
+
+
+</body>
+</html>
