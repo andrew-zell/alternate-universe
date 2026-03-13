@@ -13,7 +13,7 @@
 
     }
   }
-  </script>
+</script>
   <style>
     /* ── Custom Font ─────────────────────────────────────────── */
     @font-face {
@@ -71,7 +71,24 @@
       padding: clamp(32px, 5vw, 72px);
       overflow: hidden;
     }
+    .content-empty { position: relative; z-index: 1; }
     .content-empty.is-active { opacity: 1; }
+    .content-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: clamp(32px, 5vw, 72px);
+      gap: clamp(16px, 2.5vh, 28px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .content-footer.is-active { opacity: 1; pointer-events: auto; }
+    .content-footer .footer-statement {
+      text-align: left;
+      transform: none;
+      font-size: clamp(1.6rem, 2.8vw, 2.6rem);
+    }
     .home-index {
       font-family: var(--font-mono);
       font-size: clamp(0.6rem, 0.9vw, 0.72rem);
@@ -93,7 +110,7 @@
       margin-bottom: clamp(20px, 3.5vh, 44px);
     }
     .home-foot {
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--muted);
       padding-top: clamp(14px, 2vh, 24px);
       display: flex;
       justify-content: space-between;
@@ -120,7 +137,7 @@
       font-size: 0.6rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--very-muted);
+      color: var(--muted);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -131,7 +148,7 @@
       display: block;
       width: 1px;
       height: 36px;
-      background: var(--border);
+      background: var(--muted);
     }
 
 
@@ -245,12 +262,12 @@
 
     /* ── Content Panel ────────────────────────────────────────── */
     .content-card {
+      z-index: 1;
       position: absolute;
       inset: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: clamp(32px, 5vh, 80px) clamp(32px, 5vw, 80px) clamp(32px, 5vh, 80px) clamp(24px, 3vw, 48px);
+      justify-content: flex-start;
       opacity: 0;
       transform: translateY(14px);
       transition: opacity 380ms var(--ease-out-quart),
@@ -269,61 +286,66 @@
                   transform 220ms var(--ease-in-quart);
     }
 
+    /* Restore overrides for special cards — must come after .content-card */
+    .content-card.content-empty,
+    .content-card.content-footer {
+      justify-content: flex-end;
+      padding: clamp(32px, 5vw, 72px);
+    }
+
     /* Empty / home state styles defined above with .home-* classes */
 
-    /* App card layout */
-    .app-card-inner {
-      display: grid;
-      grid-template-rows: auto auto 1fr auto auto;
-      gap: clamp(12px, 2vh, 22px);
-      height: min(580px, 80vh);
+    /* ── App card layout ─────────────────────────────────────── */
+    /* Vertically centered content block; journal btn is absolute */
+    .app-card-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      padding: clamp(40px, 6vh, 72px) clamp(28px, 4.5vw, 56px);
+      overflow: hidden;
     }
+    .app-card-content {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(14px, 2vh, 22px);
+      max-height: 100%;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .app-card-content::-webkit-scrollbar { display: none; }
 
     .app-name {
       font-family: var(--font-display);
-      font-size: clamp(2.4rem, 4.5vw, 5.2rem);
+      font-size: clamp(2rem, 3.8vw, 4.4rem);
       font-weight: 400;
-      line-height: 0.92;
+      line-height: 1;
+      padding-top: 0.06em;
       letter-spacing: 0;
       color: var(--text);
-      transform: scaleX(1.2);
-      transform-origin: left top;
       display: block;
     }
-    .app-body {
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-    }
-    .app-status {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 0.28em 0.65em;
-      border: 1px solid currentColor;
-      line-height: 1;
-      flex-shrink: 0;
-      margin-top: 0.25em;
-    }
-    .app-status.status-active   { /* color set inline per-app accent */ }
-    .app-status.status-design   { color: var(--very-muted); }
-
     .app-tagline {
       font-family: var(--font-body);
       font-style: italic;
-      font-size: clamp(0.9rem, 1.35vw, 1.1rem);
-      color: oklch(60% 0.008 54);
+      font-size: clamp(0.88rem, 1.3vw, 1.05rem);
+      color: oklch(58% 0.008 54);
       line-height: 1.3;
     }
-
     .app-preview {
       background: var(--surface);
       border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100px;
+      width: 80%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .app-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
     .app-preview-label {
       font-family: var(--font-mono);
@@ -331,16 +353,15 @@
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--very-muted);
+      padding: 8px;
     }
-
     .app-description {
       font-family: var(--font-body);
-      font-size: clamp(0.92rem, 1.25vw, 1.05rem);
+      font-size: clamp(0.9rem, 1.2vw, 1.02rem);
       line-height: 1.72;
-      color: oklch(78% 0.007 54);
-      flex: 1;
+      color: oklch(76% 0.007 54);
+      width: 80%;
     }
-
     .app-stack {
       display: flex;
       flex-wrap: wrap;
@@ -348,12 +369,46 @@
     }
     .stack-tag {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.06em;
-      color: oklch(62% 0.007 54);
+      color: oklch(60% 0.007 54);
       padding: 0.28em 0.62em;
-      border: 1px solid oklch(28% 0.006 50);
+      border: 1px solid oklch(26% 0.006 50);
       line-height: 1;
+    }
+    .app-status {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.3em 0.7em;
+      border: 1px solid currentColor;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .app-status.status-active   { /* color set inline per-app accent */ }
+    .app-status.status-design   { color: var(--very-muted); }
+    /* Filled accent tag — inverse of the outlined active badge */
+    .app-access-tag {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.3em 0.7em;
+      line-height: 1;
+      flex-shrink: 0;
+      background: var(--card-accent);
+      color: oklch(8% 0.005 50);
+      border: 1px solid var(--card-accent);
+      text-decoration: none;
+      transition: opacity 160ms ease;
+    }
+    .app-access-tag:hover { opacity: 0.85; }
+    .app-sub {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     /* ── Journal Entries ─────────────────────────────────────────── */
@@ -408,10 +463,10 @@
       font-family: var(--font-display);
       font-size: clamp(1.15rem, 1.8vw, 1.55rem);
       color: var(--text);
-      transform: scaleX(1.2);
-      transform-origin: left;
       display: block;
-      line-height: 1;
+      line-height: 1.15;
+      overflow-wrap: break-word;
+      word-break: break-word;
       margin-bottom: clamp(12px, 1.8vh, 22px);
     }
     .journal-body {
@@ -458,25 +513,26 @@
     /* ── Journal Open Button ──────────────────────────────────────── */
     .journal-open-btn {
       position: absolute;
-      bottom: clamp(24px, 4vh, 52px);
-      right: clamp(28px, 4vw, 56px);
+      bottom: clamp(20px, 3.5vh, 40px);
+      right: clamp(24px, 3.5vw, 52px);
       font-family: var(--font-display);
       font-size: 0.72rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: oklch(58% 0.008 52);
       background: none;
-      border: 1px solid oklch(44% 0.007 50);
+      border: 1px solid oklch(40% 0.007 50);
       padding: 0.5em 1em;
       cursor: pointer;
       transform: scaleX(1.2);
       transform-origin: right bottom;
       display: inline-block;
       transition: color 180ms ease, border-color 180ms ease;
+      z-index: 2;
     }
     .journal-open-btn:hover {
       color: var(--text);
-      border-color: oklch(46% 0.006 50);
+      border-color: oklch(50% 0.006 50);
     }
 
     /* ── Progress Indicator ───────────────────────────────────── */
@@ -537,7 +593,6 @@
       text-transform: uppercase;
       color: var(--very-muted);
     }
-
     /* ── Reduced motion ───────────────────────────────────────── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -575,6 +630,7 @@
       <!-- Panel 2: App Card -->
       <div class="zone-panel" id="zone-right">
 
+
         <!-- Empty state -->
         <div class="content-card content-empty is-active" id="content-empty">
           <span class="home-index">001 — A–Z</span>
@@ -589,6 +645,13 @@
         </div>
 
         <!-- App cards injected by JS -->
+
+        <!-- Footer slot (index 26) -->
+        <div class="content-card content-footer" id="content-footer">
+          <p class="footer-statement">26 letters.<br>6 apps so far.<br>The rest is still loading.</p>
+          <span class="footer-sub">alternate.universe — Zell</span>
+        </div>
+
       </div>
 
       <div class="zone-divider"></div>
@@ -610,11 +673,11 @@
   <!-- ════════════════════════════════════════════════════════ -->
   <!-- Section 3 — Footer                                      -->
   <!-- ════════════════════════════════════════════════════════ -->
-  <footer class="footer" aria-label="Closing">
+  <footer class="footer" aria-label="Closing" style="display:none">
     <div class="footer-line" aria-hidden="true"></div>
     <p class="footer-statement">
       26 letters.<br>
-      3 apps so far.<br>
+      6 apps so far.<br>
       The rest is still loading.
     </p>
     <span class="footer-sub">alternate.universe — Zell</span>
@@ -628,11 +691,14 @@
       {
         letter: 'A',
         index:  0,
+        preview: 'app-previews/artifex-preview.png',
         name:   'Artifex',
         tagline: 'Prospecting video generator',
         description: 'Artifex generates personalized sales prospecting videos for Zoom — built on Remotion, so every frame is code. Drop in a prospect, get a rendered video. No screen recording, no editing, no exporting from a timeline. The output looks produced because it is — just not by a human.',
         stack:  ['React', 'Remotion', 'Fly.io', 'TypeScript'],
         status: 'active',
+        demo:   null,
+        repo:   null,
         accent: 'oklch(62% 0.18 250)',
         accentRaw: 'oklch(62% 0.18 250)',
         journal: [
@@ -704,11 +770,14 @@
       {
         letter: 'B',
         index:  1,
+        preview: 'app-previews/brandgen-preview.png',
         name:   'Brand.gen',
         tagline: 'Brand canvas generator',
         description: 'Brand.gen builds on Horizon’s rendering engine to generate on-brand canvases for executive briefing center screens — constrained to specific physical dimensions, populated with SVG logos pulled from Wikimedia, custom text, and image placement. Built to make a room feel like the customer already owns the space.',
         stack:  ['React', 'WebGL', 'Wikimedia API', 'TypeScript'],
         status: 'active',
+        demo:   null,
+        repo:   null,
         accent: 'oklch(72% 0.15 220)',
         accentRaw: 'oklch(72% 0.15 220)',
         journal: [
@@ -743,6 +812,8 @@
         description: 'Janus is the coordination layer for executive briefing centers — intake from Salesforce, a request-and-approval workflow, agenda building, and a structured handoff to Relay. Built to replace the spreadsheets and email chains that currently hold EBC operations together.',
         stack:  ['React', 'Express', 'TypeScript', 'Prisma'],
         status: 'active',
+        demo:   null,
+        repo:   null,
         accent: 'oklch(75% 0.14 65)',
         accentRaw: 'oklch(75% 0.14 65)',
         journal: [
@@ -765,11 +836,14 @@
       {
         letter: 'H',
         index:  7,
+        preview: 'app-previews/horizon-preview.png',
         name:   'Horizon',
         tagline: 'Sky gradient generator',
         description: 'Horizon generates photorealistic sky gradients using a WebGL fragment shader — not a CSS trick, not a gradient picker. Real atmospheric math: zenith-to-horizon color curves, grain noise, refractive bar effects, seed-based randomization. Export as PNG or SVG. Built because the sky is underrated.',
         stack:  ['React', 'WebGL', 'GLSL', 'TypeScript'],
         status: 'active',
+        demo:   'https://horizon-app.fly.dev',
+        repo:   null,
         accent: 'var(--accent-h)',
         accentRaw: 'oklch(61% 0.13 47)',
         journal: [],
@@ -777,11 +851,14 @@
       {
         letter: 'R',
         index:  17,
+        preview: 'app-previews/relay-preview.png',
         name:   'Relay',
         tagline: 'Briefing center content management',
         description: 'Relay is the operating system for executive briefing centers. It manages what plays on which screen, in which room, for which meeting — with per-location configuration, idle states, and a live attendee model. Built to make a physical room feel as intentional as a keynote slide.',
         stack:  ['React', 'Fly.io', 'Supabase', 'TypeScript'],
         status: 'active',
+        demo:   null,
+        repo:   null,
         accent: 'var(--accent-r)',
         accentRaw: 'oklch(93% 0.22 130)',
         journal: [
@@ -804,11 +881,14 @@
       {
         letter: 'S',
         index:  18,
+        preview: 'app-previews/sentimento-preview.png',
         name:   'Sentimento',
         tagline: 'Post-briefing survey tool',
         description: 'Sentimento reads the briefing record Relay writes and generates a survey that sounds like it was drafted by someone who was actually in the room. LLM-generated questions based on the actual briefing context — not templates. Fixed structure, variable content. The goal is feedback that feels human enough to give it.',
         stack:  ['React', 'Supabase', 'Claude API', 'TypeScript'],
         status: 'in design',
+        demo:   null,
+        repo:   null,
         accent: 'var(--accent-s)',
         accentRaw: 'oklch(58% 0.11 148)',
         journal: [
@@ -862,7 +942,8 @@
       letterDrum.classList.toggle('visible', !atHome);
     }
     const zoneRight   = document.getElementById('zone-right');
-    const contentEmpty = document.getElementById('content-empty');
+    const contentEmpty  = document.getElementById('content-empty');
+    const contentFooter = document.getElementById('content-footer');
     const progressLetterEl = document.getElementById('progress-letter');
     const progressPosEl    = document.getElementById('progress-pos');
 
@@ -886,24 +967,34 @@
     APPS.forEach(app => {
       const card = document.createElement('div');
       card.className = 'content-card';
+      card.style.setProperty('--card-accent', app.accentRaw);
 
       const statusClass = app.status === 'active' ? 'status-active' : 'status-design';
       const statusColor = app.status === 'active' ? `style="color:${app.accentRaw}"` : '';
       const hasJournal  = app.journal && app.journal.length > 0;
 
+      const accessTag = app.demo
+        ? `<a class="app-access-tag" href="${app.demo}" target="_blank" rel="noopener">Try it &#8250;</a>`
+        : `<span class="app-access-tag">internal only</span>`;
+
       card.innerHTML = `
-        <div class="app-card-inner">
-          <h2 class="app-name">${app.name}</h2>
-          <p class="app-tagline">${app.tagline}</p>
-          <div class="app-preview">
-            <span class="app-preview-label">${app.name} — preview</span>
-          </div>
-          <div class="app-body">
+        <div class="app-card-body">
+          <div class="app-card-content">
+            <h2 class="app-name">${app.name}</h2>
+            <div class="app-sub">
+              <p class="app-tagline">${app.tagline}</p>
+              <span class="app-status ${statusClass}" ${statusColor}>${app.status === 'active' ? 'active' : 'in design'}</span>
+              ${accessTag}
+            </div>
+            <div class="app-preview">
+              ${app.preview
+                ? `<img src="${app.preview}" alt="${app.name} preview">`
+                : `<span class="app-preview-label">${app.name} — preview</span>`}
+            </div>
             <p class="app-description">${app.description}</p>
-            <span class="app-status ${statusClass}" ${statusColor}>${app.status === 'active' ? 'active' : 'in design'}</span>
-          </div>
-          <div class="app-stack">
-            ${app.stack.map(s => `<span class="stack-tag">${s}</span>`).join('')}
+            <div class="app-stack">
+              ${app.stack.map(s => `<span class="stack-tag">${s}</span>`).join('')}
+            </div>
           </div>
         </div>
         ${hasJournal ? `<button class="journal-open-btn" data-letter="${app.letter}">Open Journal &#8249;</button>` : ''}
@@ -990,7 +1081,10 @@
        Wheel Handler
     ═══════════════════════════════════════════════════════════ */
     window.addEventListener('wheel', (e) => {
-      if (!inZone) return;
+      if (!inZone) {
+        if (e.deltaY < 0) { e.preventDefault(); enterZone(25); }
+        return;
+      }
       if (journalOpen) return; // let journal panel scroll natively
       e.preventDefault();
 
@@ -1004,7 +1098,7 @@
 
         const next = letterTarget + dir;
         if (next < -1) { return; }
-        if (next > 25) { exitZone(1);  return; }
+        if (next > 26) { return; }
 
         letterTarget = next;
         syncContentPanel(letterTarget, false);
@@ -1017,13 +1111,18 @@
        Touch Handler
     ═══════════════════════════════════════════════════════════ */
     window.addEventListener('touchstart', (e) => {
-      if (!inZone) return;
+      if (!inZone) { touchLastY = e.touches[0].clientY; return; }
       touchLastY    = e.touches[0].clientY;
       touchBufferY  = 0;
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
-      if (!inZone) return;
+      if (!inZone) {
+        const dy = touchLastY - e.touches[0].clientY;
+        touchLastY = e.touches[0].clientY;
+        if (dy < -30) { e.preventDefault(); enterZone(25); }
+        return;
+      }
       if (journalOpen) return; // let journal panel scroll natively
       e.preventDefault();
 
@@ -1039,7 +1138,7 @@
 
         const next = letterTarget + dir;
         if (next < -1) { return; }
-        if (next > 25) { exitZone(1);  return; }
+        if (next > 26) { return; }
 
         letterTarget = next;
         syncContentPanel(letterTarget, false);
@@ -1066,7 +1165,7 @@
 
       const next = letterTarget + dir;
       if (next < -1) { return; }
-      if (next > 25) { exitZone(1);  return; }
+      if (next > 26) { return; }
 
       letterTarget = next;
       syncContentPanel(letterTarget, false);
@@ -1087,7 +1186,9 @@
     function syncContentPanel(idx, instant) {
       const appAtExact = appByIndex[idx];
 
-      if (appAtExact) {
+      if (idx === 26) {
+        transitionTo('footer', instant);
+      } else if (appAtExact) {
         /* Landed exactly on an active app letter */
         transitionTo(appAtExact, instant);
       } else if (idx < APPS[0].index) {
@@ -1115,19 +1216,24 @@
       const FADE_IN_DELAY  = instant ? 0 : FADE_OUT_MS + 30;
 
       /* Fade out current */
-      if (currentApp && currentApp !== undefined) {
+      if (currentApp && currentApp !== undefined && currentApp !== 'footer') {
         const old = appCards[currentApp.letter];
         old.classList.remove('is-active');
         old.classList.add('is-leaving');
         setTimeout(() => old.classList.remove('is-leaving'), FADE_OUT_MS + 50);
       } else if (currentApp === null) {
         contentEmpty.classList.remove('is-active');
+      } else if (currentApp === 'footer') {
+        contentFooter.classList.remove('is-active');
       }
 
       currentApp = nextApp;
 
       setTimeout(() => {
-        if (nextApp) {
+        if (nextApp !== currentApp) return; // superseded — a later transition won
+        if (nextApp === 'footer') {
+          contentFooter.classList.add('is-active');
+        } else if (nextApp) {
           appCards[nextApp.letter].classList.add('is-active');
         } else {
           contentEmpty.classList.add('is-active');
@@ -1310,5 +1416,203 @@
   </script>
 
 
+
+
+  <script>
+(function() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  // ── Config ────────────────────────────────────────────────
+  const COUNT      = 4000;
+  const SPEED      = 0.00008;   // slower = more organic
+  const SPIN_SPEED = 0.00010;
+  const NOISE_SCALE = 0.55;     // tighter curl = more shape coherence
+
+  const COLORS = [
+    [15,  130, 255],
+    [0,   210, 240],
+    [80,  20,  220],
+    [0,   180, 200],
+    [40,  100, 255],
+  ];
+
+  // ── Noise ─────────────────────────────────────────────────
+  function hash(x, y, z) {
+    const h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453;
+    return h - Math.floor(h);
+  }
+  function smoothstep(t) { return t * t * (3 - 2 * t); }
+  function lerpN(a, b, t) { return a + (b - a) * t; }
+
+  function noise3(x, y, z) {
+    const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
+    const fx = x-ix, fy = y-iy, fz = z-iz;
+    const ux = smoothstep(fx), uy = smoothstep(fy), uz = smoothstep(fz);
+    return lerpN(
+      lerpN(lerpN(hash(ix,iy,iz),   hash(ix+1,iy,iz),   ux),
+             lerpN(hash(ix,iy+1,iz), hash(ix+1,iy+1,iz), ux), uy),
+      lerpN(lerpN(hash(ix,iy,iz+1),   hash(ix+1,iy,iz+1),   ux),
+             lerpN(hash(ix,iy+1,iz+1), hash(ix+1,iy+1,iz+1), ux), uy),
+      uz
+    );
+  }
+
+  function curl(x, y, z, t) {
+    const e = 0.012;
+    const s = 0.45;
+    return [
+      (noise3(x, y+e, z+t) - noise3(x, y-e, z+t)) / (2*e) * s,
+      (noise3(x, y, z+e+t) - noise3(x, y, z-e+t)) / (2*e) * s,
+      (noise3(x+e, y, z+t) - noise3(x-e, y, z+t)) / (2*e) * s,
+    ];
+  }
+
+  // ── Particles ─────────────────────────────────────────────
+  const px = new Float32Array(COUNT);
+  const py = new Float32Array(COUNT);
+  const pz = new Float32Array(COUNT);
+  const ps = new Float32Array(COUNT);
+  const pc = new Uint8Array(COUNT);
+  const pa = new Float32Array(COUNT);
+
+  for (let i = 0; i < COUNT; i++) {
+    // Torus-ish init — gives more interesting silhouette than pure sphere
+    const theta = Math.random() * Math.PI * 2;
+    const phi   = Math.random() * Math.PI * 2;
+    const R = 0.7, r = 0.35 + Math.random() * 0.3;
+    px[i] = (R + r * Math.cos(phi)) * Math.cos(theta);
+    py[i] = (R + r * Math.cos(phi)) * Math.sin(theta);
+    pz[i] = r * Math.sin(phi) * 1.4;
+    ps[i] = 0.5 + Math.random() * 0.7;
+    pc[i] = Math.floor(Math.random() * COLORS.length);
+    pa[i] = 0.6 + Math.random() * 0.4;
+  }
+
+  // ── State ─────────────────────────────────────────────────
+  let t     = 0;
+  let spinY = 0;
+  let spinX = 0.18;
+  let mouseX = 0, mouseY = 0;
+  let targetMX = 0, targetMY = 0;
+
+  document.addEventListener('mousemove', e => {
+    targetMX = (e.clientX / window.innerWidth  - 0.5) * 2;
+    targetMY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── Project ───────────────────────────────────────────────
+  function project(x, y, z) {
+    const cy = Math.cos(spinY + mouseX * 0.06);  // very subtle parallax
+    const sy = Math.sin(spinY + mouseX * 0.06);
+    const cx = Math.cos(spinX + mouseY * 0.04);
+    const sx = Math.sin(spinX + mouseY * 0.04);
+
+    const rx  = x * cy - z * sy;
+    const rz  = x * sy + z * cy;
+    const ry2 = y * cx - rz * sx;
+    const rz2 = y * sx + rz * cx;
+
+    const w = canvas.width, h = canvas.height;
+    const scale = Math.min(w, h) * 0.32;
+    const dist  = 3.2;
+    const zd = dist + rz2;
+    if (zd <= 0.01) return null;
+    const persp = 2.0 / zd;
+    return {
+      sx: w/2 + rx * persp * scale,
+      sy: h/2 - ry2 * persp * scale,
+      sz: rz2,
+      persp,
+    };
+  }
+
+  // ── Animate ───────────────────────────────────────────────
+  let rafId;
+
+  function animate() {
+    rafId = requestAnimationFrame(animate);
+    t     += SPEED;
+    spinY += SPIN_SPEED;
+
+    mouseX += (targetMX - mouseX) * 0.025;
+    mouseY += (targetMY - mouseY) * 0.025;
+
+    for (let i = 0; i < COUNT; i++) {
+      const [cx, cy, cz] = curl(
+        px[i] * NOISE_SCALE,
+        py[i] * NOISE_SCALE,
+        pz[i] * NOISE_SCALE,
+        t
+      );
+      px[i] += cx * ps[i] * 0.0022;
+      py[i] += cy * ps[i] * 0.0022;
+      pz[i] += cz * ps[i] * 0.0022;
+
+      // Soft boundary — pull toward torus shell rather than sphere
+      const d = Math.sqrt(px[i]*px[i] + py[i]*py[i] + pz[i]*pz[i]);
+      if (d > 1.6) {
+        px[i] *= 0.982;
+        py[i] *= 0.982;
+        pz[i] *= 0.982;
+      }
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Project + sort back to front
+    const projected = [];
+    for (let i = 0; i < COUNT; i++) {
+      const p = project(px[i], py[i], pz[i]);
+      if (p) projected.push({ i, ...p });
+    }
+    projected.sort((a, b) => a.sz - b.sz);
+
+    for (const p of projected) {
+      const col   = COLORS[pc[p.i]];
+      const depth = Math.max(0, Math.min(1, (p.sz + 1.6) / 3.2));
+      const alpha = pa[p.i] * (0.5 + depth * 0.5);
+
+      // Sharp core dot
+      const dotR = Math.max(0.6, 1.4 * p.persp);
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${alpha})`;
+      ctx.fill();
+
+      // Tight glow halo — much smaller than before
+      const haloR = dotR * 3.5;
+      const grad = ctx.createRadialGradient(p.sx, p.sy, dotR * 0.5, p.sx, p.sy, haloR);
+      grad.addColorStop(0,   `rgba(${col[0]},${col[1]},${col[2]},${alpha * 0.35})`);
+      grad.addColorStop(1,   `rgba(${col[0]},${col[1]},${col[2]},0)`);
+      ctx.beginPath();
+      ctx.arc(p.sx, p.sy, haloR, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+  }
+
+  let _running = false;
+  function _start() { if (_running) return; _running = true; animate(); }
+  function _stop()  { _running = false; cancelAnimationFrame(rafId); }
+  const observer = new IntersectionObserver(
+    ([entry]) => entry.isIntersecting ? _start() : _stop(),
+    { threshold: 0 }
+  );
+  observer.observe(canvas);
+  _start();
+
+  canvas._pause  = () => cancelAnimationFrame(rafId);
+  canvas._resume = () => animate();
+})();
+  </script>
 </body>
 </html>
